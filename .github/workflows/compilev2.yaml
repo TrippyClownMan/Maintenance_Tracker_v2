@@ -3,12 +3,12 @@ name: Compile Maintenance Tracker v2 FAP
 on:
   push:
     paths:
-      - "applications_user/maintenance_tracker_v2/**"
-      - ".github/workflows/compile-maintenance-tracker.yml"
+      - "Maintenance_Tracker_v2/coreapp/maintenance_tracker_v2.c/**"
+      - ".github/workflows/compilev2.yml"
   pull_request:
     paths:
-      - "applications_user/maintenance_tracker_v2/**"
-      - ".github/workflows/compile-maintenance-tracker.yml"
+      - "Maintenance_Tracker_v2/coreapp/maintenance_tracker_v2.c/**"
+      - ".github/workflows/compilev2.yml"
   workflow_dispatch:
     inputs:
       firmware:
