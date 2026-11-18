@@ -1,0 +1,10 @@
+App(
+    appid="maintenance_tracker_v2",
+    name="Maintenance Tracker v2",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="maintenance_tracker_v2_app",
+    requires=["gui", "storage", "nfc"],
+    stack_size=4 * 1024,
+    fap_category="Tools",
+    fap_description="Equipment maintenance logs and NFC URI tag writing",
+)
