@@ -73,7 +73,7 @@ jobs:
       - name: Upload FAP artifact
         uses: actions/upload-artifact@v4
         with:
-          name: maintenance_tracker_v2-${{ env.FIRMWARE }}-${{ env.CHANNEL }}
+          name: coreapp-${{ env.FIRMWARE }}-${{ env.CHANNEL }}
           path: ${{ steps.build.outputs.fap-dir }}/*.fap
           if-no-files-found: error
           retention-days: 30
