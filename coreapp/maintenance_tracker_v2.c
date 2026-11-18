@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define TAG "maintenance_tracker_v2"
+#define TAG "Maintenance_tracker_v2"
 #define ASSET_LIMIT 24
 #define ASSET_NAME_SIZE 32
 #define DB_PATH APP_DATA_PATH("assets.txt")
@@ -227,7 +227,7 @@ static App* app_alloc() {
     app->selected = -1;
 
     app->storage = furi_record_open(RECORD_STORAGE);
-    storage_common_mkdir(app->storage, "/ext/apps_data/maintenance_tracker");
+    storage_common_mkdir(app->storage, "/ext/apps_data/maintenance_tracker_v2");
 
     load_assets(app);
 
@@ -238,7 +238,7 @@ static App* app_alloc() {
 
     // Main menu
     app->main_menu = submenu_alloc();
-    submenu_set_header(app->main_menu, "Maint Tracker");
+    submenu_set_header(app->main_menu, "maintenance_tracker_v2");
     submenu_add_item(app->main_menu, "Show Equipment", 0, main_callback, app);
     submenu_add_item(app->main_menu, "Add Equipment", 1, main_callback, app);
     view_dispatcher_add_view(app->dispatcher, 0, submenu_get_view(app->main_menu));
