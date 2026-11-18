@@ -271,7 +271,7 @@ static void app_free(App* app) {
     free(app);
 }
 
-int32_t maintenance_tracker_app(void* p) {
+int32_t maintenance_tracker_v2_app(void* p) {
     UNUSED(p);
     App* app = app_alloc();
     view_dispatcher_switch_to_view(app->dispatcher, 0);
