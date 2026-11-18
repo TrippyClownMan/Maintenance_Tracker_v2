@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define TAG "Maintenance_tracker_v2"
+#define TAG "maintenance_tracker_v2"
 #define ASSET_LIMIT 24
 #define ASSET_NAME_SIZE 32
 #define DB_PATH APP_DATA_PATH("assets.txt")
