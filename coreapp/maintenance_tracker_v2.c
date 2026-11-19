@@ -41,7 +41,7 @@ static bool save_assets(App* app) {
         ok = true;
         for(uint8_t i = 0; i < app->asset_count; i++) {
             char line[64];
-            int len = snprintf(line, sizeof(line), "%lu|%s\n",
+            int len = snprintf(line, sizeof(line), "%lu|%s|\n",
                                (unsigned long)app->assets[i].id,
                                app->assets[i].name);
             if(len <= 0 || storage_file_write(file, line, len) != (uint16_t)len) {
