@@ -1,8 +1,14 @@
-#include <furi.h>
-#include <gui/gui.h>
-#include <gui/view_dispatcher.h>
-#include <gui/modules/submenu.h>
-#include <gui/modules/text_input.h>
+//cant exit equipment list view with back button, must add equipment first
+//still have Ghost screen issue when switching between views, need to clear screen before switching
+        //not loading .svc files
+//cant exit app with back
+
+                                                                        //               _______
+#include <furi.h>                                                       //************** |NOTES|  **************/
+#include <gui/gui.h>                                                    //  [App*] = mem pointer to struct App           
+#include <gui/view_dispatcher.h>                                        //  [App**] = pointer to mem 'box' with App* inside. = EX: mem.address [ctx [App*] ]
+#include <gui/modules/submenu.h>                                        //            points to 
+#include <gui/modules/text_input.h>                                     //
 #include <storage/storage.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +17,7 @@
 #define TAG "maintenance_tracker_v2"
 #define ASSET_LIMIT 24
 #define ASSET_NAME_SIZE 32
-#define DB_PATH APP_DATA_PATH("assets.txt")
+#define DB_PATH APP_DATA_PATH("assets.txt")     //equipment list 
 
 typedef struct {
     uint32_t id;
@@ -25,24 +31,29 @@ typedef struct {
     View* list_view;
     Storage* storage;
 
+
     Asset assets[ASSET_LIMIT];
     uint8_t asset_count;
     int8_t selected;
     char input_buf[ASSET_NAME_SIZE];
-} App;
+} App; //<-------------------------------------|                                  
+        //---------
+       // app
 
-// ---------- Database ----------
 
-static bool save_assets(App* app) {
-    File* file = storage_file_alloc(app->storage);
-    bool ok = false;
+//         |
+// ---------- Database ----------   //         |
+                                    //         v
+static bool save_assets(App* app) {                                              //App* (*) = pointer to struct App 's mem address, handing adress to function
+    File* file = storage_file_alloc(app->storage);                              // *** (File*) *** = "memery pointer" "LOOK HERE"  //               //so it can access the App struct's members
+    bool ok = false;                                                           // Saftey Exit for storage_file_open FAILURE
 
-    if(storage_file_open(file, DB_PATH, FSAM_WRITE, FSOM_CREATE_ALWAYS)) {
-        ok = true;
-        for(uint8_t i = 0; i < app->asset_count; i++) {
+    if(storage_file_open(file, DB_PATH, FSAM_WRITE, FSOM_CREATE_ALWAYS)) {    //<-----(DB_PATH = asset.txt)  
+        ok = true;                                                                  // (FSAM_WRITE = write access)
+        for(uint8_t i = 0; i < app->asset_count; i++) {                                  // (FSOM_CREATE_ALWAYS = create file if it doesn't exist, overwrite if it does)
             char line[64];
-            int len = snprintf(line, sizeof(line), "%lu|%s|\n",
-                               (unsigned long)app->assets[i].id,
+            int len = snprintf(line, sizeof(line), "%lu|%s|\n",                        //integer to string, %lu = unsigned long | %s = string, | \n = new line | sprintf() = format and store values in array ('line')  //sizeof(line) = size of line array
+                               (unsigned long)app->assets[i].id,                      // len = number of characters written to line array, if len <= 0, error occurred
                                app->assets[i].name);
             if(len <= 0 || storage_file_write(file, line, len) != (uint16_t)len) {
                 ok = false;
@@ -57,7 +68,7 @@ static bool save_assets(App* app) {
 
 static void load_assets(App* app) {
     app->asset_count = 0;
-    memset(app->assets, 0, sizeof(app->assets));
+    memset(app->assets, 0, sizeof(app->assets));        // (read , right to , left)?
 
     File* file = storage_file_alloc(app->storage);
     if(!storage_file_open(file, DB_PATH, FSAM_READ, FSOM_OPEN_EXISTING)) {
@@ -71,8 +82,8 @@ static void load_assets(App* app) {
     size_t pos = 0;
 
     while((bytes = storage_file_read(file, chunk, sizeof(chunk))) > 0) {
-        for(uint16_t i = 0; i < bytes; i++) {
-            if(chunk[i] == '\n' || chunk[i] == '\r') {
+        for(uint16_t i = 0; i < bytes; i++) {                                   // read each byte of the chunk,  otherwise add to line buffer
+            if(chunk[i] == '\n' || chunk[i] == '\r') {                          //if it is a newline or carriage return, parse the line and add to assets array,    
                 if(pos > 0) {
                     line[pos] = '\0';
 
@@ -124,13 +135,15 @@ static bool add_asset(App* app, const char* name) {
 
 // ---------- Views ----------
 
-static void draw_list(Canvas* canvas, void* ctx) {
-    App* app = ctx;
+static void draw_list(Canvas* canvas, void* ctx) {    //void* ctx = (void*) = 4 byte holder for mem.address ctx (to be defined later) //canvas/ctx = Function param = defined inside ( ) = (orange)                            //here, where is it not updating
+    App* app = *(App**)ctx;                           // ctx 4 byte address assigned         //app = local variable = placed inside{ } = white 
+    if(!app) return;                                    // dereference ctx to get App* pointer, then assign to app variable
+
     canvas_clear(canvas);
     canvas_set_font(canvas, FontPrimary);
     canvas_draw_str(canvas, 2, 10, "Equipment");
 
-    if(app->asset_count == 0) {
+    if(app->asset_count == 0) {                                       //here, where is it not updating
         canvas_set_font(canvas, FontSecondary);
         canvas_draw_str(canvas, 4, 30, "No equipment yet");
         canvas_draw_str(canvas, 4, 42, "Back = Add one");
@@ -248,7 +261,12 @@ static App* app_alloc() {
     view_set_context(app->list_view, app);
     view_set_draw_callback(app->list_view, draw_list);
     view_set_input_callback(app->list_view, list_input);
-    view_allocate_model(app->list_view, ViewModelTypeLockFree, 1);
+    view_allocate_model(app->list_view, ViewModelTypeLockFree, sizeof(App*));      // add size of App* to model, so it can be passed to draw_list() as ctx
+        with_view_model(
+            app->list_view, 
+            App** model,                            // set model to point to app, so it can be accessed in draw_list() as ctx
+            { *model = app;},                             // dereference model to get App* pointer, then assign to app variable
+            false);
     view_dispatcher_add_view(app->dispatcher, 1, app->list_view);
 
     // Text input
