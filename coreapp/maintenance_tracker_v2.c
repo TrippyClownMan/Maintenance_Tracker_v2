@@ -52,7 +52,7 @@ static bool save_assets(App* app) {                                             
         ok = true;                                                                  // (FSAM_WRITE = write access)
         for(uint8_t i = 0; i < app->asset_count; i++) {                                  // (FSOM_CREATE_ALWAYS = create file if it doesn't exist, overwrite if it does)
             char line[64];
-            int len = snprintf(line, sizeof(line), "%lu|%s|\n",                        //integer to string, %lu = unsigned long | %s = string, | \n = new line | sprintf() = format and store values in array ('line')  //sizeof(line) = size of line array
+            int len = snprintf(line, sizeof(line), "%lu|%s\n",                        //integer to string, %lu = unsigned long | %s = string, | \n = new line | sprintf() = format and store values in array ('line')  //sizeof(line) = size of line array
                                (unsigned long)app->assets[i].id,                      // len = number of characters written to line array, if len <= 0, error occurred
                                app->assets[i].name);
             if(len <= 0 || storage_file_write(file, line, len) != (uint16_t)len) {
@@ -157,11 +157,11 @@ static void draw_list(Canvas* canvas, void* ctx) {    //void* ctx = (void*) = 4 
 
     for(uint8_t row = 0; row < 3; row++) {
         uint8_t idx = start + row;
-        if(idx >= app->asset_count) break;
+        if(idx >= app->asset_count) break;                  // if idx (start + row) is greater that total # of saved assets
 
-        uint8_t y = 22 + row * 13;
-        bool sel = (idx == (uint8_t)app->selected);
-
+        uint8_t y = 22 + row * 13;                    
+        bool sel = (idx == (uint8_t)app->selected);        //   [if idx is equal to selected asset, then sel = true, else false
+                                                           // if the asset number sellected = the asset number in the list, (assets.txt) then sel = true, else false
         if(sel) {
             canvas_set_color(canvas, ColorBlack);
             canvas_draw_box(canvas, 0, y - 9, 128, 12);
